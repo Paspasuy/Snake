@@ -132,8 +132,7 @@ class MainForm(QWidget):
 		self.painter.setBrush(color_brush)
 		self.painter.setPen(color_pen)
 		for i in range(WIDTH + 1):
-			self.painter.drawPolygon(*[QPoint(i * CELL, 0), QPoint(i * CELL, HEIGHT * CELL)]) 						# moi gloza bolyat ot neeffectivnosti etogo koda
-																							  						# na nokii zmeika bystree
+			self.painter.drawPolygon(*[QPoint(i * CELL, 0), QPoint(i * CELL, HEIGHT * CELL)])
 		for i in range(HEIGHT + 1):
 			self.painter.drawPolygon(*[QPoint(0, i * CELL), QPoint(WIDTH * CELL, i * CELL)])
 		color_brush = QColor(0, 153, 0)
