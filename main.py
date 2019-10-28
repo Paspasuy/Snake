@@ -1,8 +1,7 @@
 import sys
 
-from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QPoint, QTimer
-from PyQt5.QtGui import QPainter, QColor, QFont
+from PyQt5.QtGui import QPainter, QColor, QFont, QPaintEvent, QKeyEvent
 from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog
 
 from DBWorker import DBWorker
@@ -48,7 +47,10 @@ class MainForm(QWidget):
 
 	def logic_process(self):
 		if not self.pause:
-			self.logic.snake.move()
+			self.logic.move()
+			if self.logic.game_finished:
+				write_data(self.logic.snake)
+				self.logic.__init__()
 		self.update()
 
 	def draw(self):
@@ -95,13 +97,13 @@ class MainForm(QWidget):
 		self.painter.drawText(0, 0, self.cell, self.cell, Qt.AlignCenter, str(len(self.logic.snake.body) - 3))
 		self.painter.drawText((self.logic.width -  4) * self.cell, 0, 4 * self.cell, self.cell, Qt.AlignCenter, PLAYER)
 
-	def paintEvent(self, a0: QtGui.QPaintEvent) -> None:
+	def paintEvent(self, a0: QPaintEvent) -> None:
 		self.painter.begin(self)
 		self.painter.setRenderHints(QPainter.HighQualityAntialiasing)
 		self.draw()
 		self.painter.end()
 
-	def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+	def keyPressEvent(self, event: QKeyEvent) -> None:
 		if event.key() == Qt.Key_Left:
 			if self.logic.snake.y_dir:
 				self.logic.snake.next_x_dir = -1
