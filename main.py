@@ -10,6 +10,7 @@ from Logic import Logic
 PLAYER = 'anonymous'
 
 dbw = None
+app = None
 
 def write_data(snake):
 	print('NAME:', PLAYER, ' ; SCORE:', len(snake.body) - 3)
@@ -30,8 +31,8 @@ class MainForm(QWidget):
 			PLAYER = name
 		print('Hello,', PLAYER + '!')
 		self.timer = QTimer()
-		self.timer.timeout.connect(self.start_game)
-		self.timer.start(3000)
+		#self.timer.timeout.connect(self.start_game)
+		#self.timer.start(3000)
 
 	def start_game(self):
 		self.pause = False
@@ -127,6 +128,8 @@ class MainForm(QWidget):
 				self.timer.start(0)
 			else:
 				self.pause_game()
+		if event.key() == Qt.Key_Escape:
+			app.quit()
 
 
 if __name__ == '__main__':
