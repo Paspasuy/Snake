@@ -43,5 +43,6 @@ class DBWorker:
 		return result, player_result
 	
 	def get_all(self):
-		result = self.cursor.execute("""SELECT * FROM records""").fetchall()
+		result = self.cursor.execute("""SELECT * FROM records ORDER BY score DESC,
+    date ASC;""").fetchall()
 		return result
