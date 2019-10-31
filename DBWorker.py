@@ -15,10 +15,6 @@ class DBWorker:
 			self.cursor = self.conn.cursor()
 			if new_created:
 				self.init_db()
-				print(new_created)
-			print("Successfully inited DB")
-			self.get_max('pavel')
-# os.popen('sudo chmod 777 ' + path_db).read()
 		except sqlite3.Error as e:            
 			print('DB error: ' + str(e))
 
@@ -38,14 +34,14 @@ class DBWorker:
 			VALUES('%s',%s, DATETIME('now'));
 		""" % (player, str(size)))
 		self.conn.commit()
-		result = self.cursor.execute("""SELECT * FROM records""").fetchall()
-		for _ in result:
-			print(_)
 
 	def get_max(self, player):
 		result = self.cursor.execute("""SELECT * FROM records WHERE score = (SELECT MAX(score) FROM records)""").fetchall()
 		player_result = self.cursor.execute("""SELECT * FROM records WHERE
 		 										score = (SELECT MAX(score) FROM records WHERE 
 												player = ("%s"))""" % player).fetchall()
-		print(result)
-		print(player_result)
+		return result, player_result
+	
+	def get_all(self):
+		result = self.cursor.execute("""SELECT * FROM records""").fetchall()
+		return result

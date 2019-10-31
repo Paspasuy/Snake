@@ -35,14 +35,14 @@ class Logic:
 		if self.matrix[x][y] == APPLE:
 			self.matrix[x][y] = BODY
 			if len(snake.body) == self.width * self.height:
-				print('WIN!')
-			self.gen_apple()
+				self.game_finished = True
+			else:
+				self.gen_apple()
 
 		else:
 			self.matrix[snake.body[0][0]][snake.body[0][1]] = EMPTY
 			snake.body.pop(0)
 			if self.matrix[x][y] == BODY:
-				print('GAME OVER!')
 				self.game_finished = True
 			else:
 				self.matrix[x][y] = BODY
