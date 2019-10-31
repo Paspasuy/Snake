@@ -28,7 +28,6 @@ class MainForm(QMainWindow):
 
 	def init_ui(self):
 		self.status_bar = self.statusBar()
-		self.status_bar.showMessage(STATUS_BAR_TEXT)
 		menubar = self.menuBar()
 		self.h = menubar.size().height()
 		action_menu = menubar.addMenu('&Actions')
@@ -56,29 +55,32 @@ class MainForm(QMainWindow):
 		name = name.strip()
 		if is_ok and name != '':
 			PLAYER = name
+		elif is_ok and name == '':
+			PLAYER = 'anonymous'
+		return is_ok
 
 	def logout(self):
-		self.pause = True
-		self.get_name()
-		self.logic = Logic()
+		self.pause_game()
+		if self.get_name():
+			self.update()
+			self.logic = Logic()
 
 	def show_game(self):
 		self.canvas = Canvas(self.logic.width * self.cell, self.logic.height * self.cell)
-		self.statusBar().showMessage(STATUS_BAR_TEXT)
 		self.setCentralWidget(self.canvas)
 
 	def start_game(self):
-		self.pause = False
-		self.timer.stop()
-		self.timer.timeout.disconnect()
-		self.timer.timeout.connect(self.logic_process)
-		self.timer.start(100)
+		if self.pause == True:
+			self.pause = False
+			self.timer.timeout.connect(self.logic_process)
+			self.timer.start(100)
 
 	def pause_game(self):
-		self.pause = True
-		self.timer.stop()
-		self.timer.timeout.disconnect()
-		self.update()
+		if self.pause == False:
+			self.pause = True
+			self.timer.stop()
+			self.timer.timeout.disconnect()
+			self.update()
 
 	def logic_process(self):
 		if not self.pause:
@@ -89,7 +91,7 @@ class MainForm(QMainWindow):
 				dbw.save_result(len(self.logic.snake.body) - 3, PLAYER)
 				sp.play_lose()
 				self.show_best()
-				self.logic.__init__()
+				self.logic = Logic()
 				self.pause_game()
 			elif l2 - l1 == 1:
 				sp.play_apple()
@@ -109,10 +111,10 @@ class MainForm(QMainWindow):
 			QMessageBox.Yes)
 
 	def show_all(self):
+		self.pause_game()
 		table = DataTable(dbw.get_all())
 		central_widget = table
 		self.setCentralWidget(central_widget)
-		self.statusBar().showMessage(STATUS_BAR_TEXT)
 
 	def paintEvent(self, a0: QPaintEvent) -> None:
 		self.canvas.painter.begin(self)
@@ -126,6 +128,7 @@ class MainForm(QMainWindow):
 		self.draw_snake()
 		self.draw_apple()
 		self.draw_text()
+		self.status_bar.showMessage(STATUS_BAR_TEXT)
 
 	def draw_background(self):
 		self.canvas.set_color(0, 0, 0)
@@ -179,8 +182,7 @@ class MainForm(QMainWindow):
 
 		if event.key() == Qt.Key_Space:
 			if self.pause == True:
-				self.timer.timeout.connect(self.start_game)
-				self.timer.start(0)
+				self.start_game()
 			else:
 				self.pause_game()
 
