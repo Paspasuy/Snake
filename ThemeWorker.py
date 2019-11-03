@@ -19,6 +19,8 @@ class ThemeWorker():
 		self.theme = -10
 		self.custom_theme_setup = None
 		self.load_config()
+		self.theme_chooser = None
+		self.custom_theme_setup = None
 
 	def set_theme(self, theme):
 		self.theme = theme
@@ -48,7 +50,7 @@ class ThemeWorker():
 		self.theme_chooser = ThemeChooser(self.themes_str, self.theme)
 
 	def init_custom_theme_setup(self):
-		self.custom_theme_setup = CustomThemeSetup()
+		self.custom_theme_setup = CustomThemeSetup(list(map(lambda _: QColor(*_), self.themes[4])))
 
 	def update_colors(self):
 		if self.custom_theme_setup != None:

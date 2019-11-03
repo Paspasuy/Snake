@@ -1,3 +1,4 @@
+#!/bin/python3
 import sys
 
 from PyQt5.QtCore import Qt, QPoint, QTimer, QSize
@@ -12,9 +13,6 @@ from ThemeWorker import ThemeWorker
 from ThemeChooser import ThemeChooser
 from CustomThemeSetup import CustomThemeSetup
 
-PLAYER = 'anonymous'
-STATUS_BAR_TEXT = 'Space: pause, Esc: quit'
-
 dbw = None
 app = None
 sp = None
@@ -22,7 +20,9 @@ sp = None
 class MainForm(QMainWindow):
 	def __init__(self):
 		super().__init__()
+		self.player = ''
 		self.get_name()
+		self.status_bar_text = 'Space: pause, Esc: quit'
 		self.cell = 40
 		self.pause = True
 		self.logic = Logic()
@@ -61,13 +61,12 @@ class MainForm(QMainWindow):
 		self.canvas.move(0, self.h)
 
 	def get_name(self):
-		global PLAYER
 		name, is_ok = QInputDialog.getText(self, "Enter your name", "What is your name?")
 		name = name.strip()
 		if is_ok and name != '':
-			PLAYER = name
+			self.player = name
 		elif is_ok and name == '':
-			PLAYER = 'anonymous'
+			self.player = 'anonymous'
 		return is_ok
 
 	def logout(self):
@@ -78,7 +77,8 @@ class MainForm(QMainWindow):
 
 	def show_game(self):
 		self.theme_worker.update_colors()
-		self.theme_worker.set_theme(self.theme_worker.theme_chooser.choose)
+		if self.theme_worker.theme_chooser != None:
+			self.theme_worker.set_theme(self.theme_worker.theme_chooser.choose)
 		self.theme_worker.write_custom()
 		self.canvas = Canvas(self.logic.width * self.cell, self.logic.height * self.cell)
 		self.setCentralWidget(self.canvas)
@@ -112,7 +112,7 @@ class MainForm(QMainWindow):
 			self.logic.move()
 			l2 = len(self.logic.snake.body)
 			if self.logic.game_finished:
-				dbw.save_result(len(self.logic.snake.body) - 3, PLAYER)
+				dbw.save_result(len(self.logic.snake.body) - 3, self.player)
 				sp.play_lose()
 				self.show_best()
 				self.logic = Logic()
@@ -123,7 +123,7 @@ class MainForm(QMainWindow):
 
 	def show_best(self):
 		score = len(self.logic.snake.body) - 3
-		best_all, best_player = dbw.get_max(PLAYER)
+		best_all, best_player = dbw.get_max(self.player)
 		s1 = "The best result on this PC:\n" + best_all[0][1] + ": " + str(best_all[0][2]) + ' (' + best_all[0][3] + ')\n'
 		s2 = "Your best result:\n" + best_player[0][1] + ": " + str(best_player[0][2]) + ' (' + best_player[0][3] + ')\n'
 		s3 = 'Your result:\n' + str(score) + '\n'
@@ -152,7 +152,7 @@ class MainForm(QMainWindow):
 		self.draw_snake()
 		self.draw_apple()
 		self.draw_text()
-		self.status_bar.showMessage(STATUS_BAR_TEXT)
+		self.status_bar.showMessage(self.status_bar_text)
 
 	def draw_background(self):
 		self.canvas.set_color(self.theme_worker.colors[0])
@@ -180,7 +180,7 @@ class MainForm(QMainWindow):
 		self.canvas.set_color(self.theme_worker.colors[4])
 		self.canvas.painter.setFont(QFont('Arial', 16))
 		self.canvas.painter.drawText(0, 0 + self.h, self.cell, self.cell, Qt.AlignCenter, str(len(self.logic.snake.body) - 3))
-		self.canvas.painter.drawText((self.logic.width - 4) * self.cell, 0 + self.h, 4 * self.cell, self.cell, Qt.AlignCenter, PLAYER)
+		self.canvas.painter.drawText((self.logic.width - 4) * self.cell, 0 + self.h, 4 * self.cell, self.cell, Qt.AlignCenter, self.player)
 		if self.pause == True:
 			self.canvas.painter.setFont(QFont('Arial', 32))
 			self.canvas.painter.drawText((self.logic.width // 2 - 4) * self.cell, (self.logic.height // 2 - 1) * self.cell + self.h, 8 * self.cell, self.cell * 4, Qt.AlignCenter, 'PAUSED')
