@@ -12,7 +12,7 @@ class Logic:
 		self.width = 20
 		self.height = 15
 		self.matrix = [[EMPTY] * self.height for _ in range(self.width)]
-		self.snake = Snake(self)
+		self.snake = Snake(self.width, self.height)
 		for x, y in self.snake.body:
 			self.matrix[x][y] = BODY
 		self.gen_apple()

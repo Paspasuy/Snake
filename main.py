@@ -8,6 +8,9 @@ from DBWorker import DBWorker
 from Logic import Logic
 from DataTable import DataTable
 from SoundPlayer import SoundPlayer
+from ThemeWorker import ThemeWorker
+from ThemeChooser import ThemeChooser
+from CustomThemeSetup import CustomThemeSetup
 
 PLAYER = 'anonymous'
 STATUS_BAR_TEXT = 'Space: pause, Esc: quit'
@@ -24,6 +27,7 @@ class MainForm(QMainWindow):
 		self.pause = True
 		self.logic = Logic()
 		self.timer = QTimer()
+		self.theme_worker = ThemeWorker()
 		self.init_ui()
 
 	def init_ui(self):
@@ -31,6 +35,7 @@ class MainForm(QMainWindow):
 		menubar = self.menuBar()
 		self.h = menubar.size().height()
 		action_menu = menubar.addMenu('&Actions')
+		settings_menu = menubar.addMenu('&Settings')
 		play_action = QAction('&Play', self)
 		history_action = QAction('&History', self)
 		logout_action = QAction('&Log out', self)
@@ -40,10 +45,16 @@ class MainForm(QMainWindow):
 		logout_action.triggered.connect(self.logout)
 		exit_action.triggered.connect(app.exit)
 		exit_action.setShortcut('Esc')
+		change_theme_action = QAction('&Choose theme', self)
+		theme_setup_action = QAction('&Set up custom theme', self)
+		change_theme_action.triggered.connect(self.change_theme)
+		theme_setup_action.triggered.connect(self.setup_custom_theme)
 		action_menu.addAction(play_action)
 		action_menu.addAction(history_action)
 		action_menu.addAction(logout_action)
 		action_menu.addAction(exit_action)
+		settings_menu.addAction(change_theme_action)
+		settings_menu.addAction(theme_setup_action)
 		self.setFixedSize(self.logic.width * self.cell, self.logic.height * self.cell + self.h + self.status_bar.height())
 		self.canvas = Canvas(self.logic.width * self.cell, self.logic.height * self.cell)
 		self.setCentralWidget(self.canvas)
@@ -66,6 +77,9 @@ class MainForm(QMainWindow):
 			self.logic = Logic()
 
 	def show_game(self):
+		self.theme_worker.update_colors()
+		self.theme_worker.set_theme(self.theme_worker.theme_chooser.choose)
+		self.theme_worker.write_custom()
 		self.canvas = Canvas(self.logic.width * self.cell, self.logic.height * self.cell)
 		self.setCentralWidget(self.canvas)
 
@@ -81,6 +95,16 @@ class MainForm(QMainWindow):
 			self.timer.stop()
 			self.timer.timeout.disconnect()
 			self.update()
+
+	def change_theme(self):
+		self.pause_game()
+		self.theme_worker.init_theme_chooser()
+		self.setCentralWidget(self.theme_worker.theme_chooser)
+
+	def setup_custom_theme(self):
+		self.pause_game()
+		self.theme_worker.init_custom_theme_setup()
+		self.setCentralWidget(self.theme_worker.custom_theme_setup)
 
 	def logic_process(self):
 		if not self.pause:
@@ -131,36 +155,35 @@ class MainForm(QMainWindow):
 		self.status_bar.showMessage(STATUS_BAR_TEXT)
 
 	def draw_background(self):
-		self.canvas.set_color(0, 0, 0)
+		self.canvas.set_color(self.theme_worker.colors[0])
 		self.canvas.painter.drawRect(0, 0 + self.h, self.logic.width * self.cell, self.logic.height * self.cell)
 
 	def draw_grid(self):
-		self.canvas.set_color(255, 211, 95)
+		self.canvas.set_color(self.theme_worker.colors[1])
 		for i in range(self.logic.width + 1):
 			self.canvas.painter.drawPolygon(*[QPoint(i * self.cell, 0 + self.h), QPoint(i * self.cell, self.logic.height * self.cell + self.h)])
 		for i in range(self.logic.height + 1):
 			self.canvas.painter.drawPolygon(*[QPoint(0, i * self.cell + self.h), QPoint(self.logic.width * self.cell, i * self.cell + self.h)])
 
 	def draw_snake(self):
-		self.canvas.set_color(0, 153, 0)
+		self.canvas.set_color(self.theme_worker.colors[2])
 		r = self.cell - 4
 		for x, y in self.logic.snake.body:
 			self.canvas.painter.drawEllipse(self.cell * x + 2, self.cell * y + 2 + self.h, r, r)
 
 	def draw_apple(self):
-		self.canvas.set_color(200, 0, 0)
+		self.canvas.set_color(self.theme_worker.colors[3])
 		r = self.cell - 4
 		self.canvas.painter.drawEllipse(self.cell * self.logic.apple_x + 2, self.cell * self.logic.apple_y + 2 + self.h, r, r)		
 
 	def draw_text(self):
-		self.canvas.set_color(255, 255, 255)
+		self.canvas.set_color(self.theme_worker.colors[4])
 		self.canvas.painter.setFont(QFont('Arial', 16))
 		self.canvas.painter.drawText(0, 0 + self.h, self.cell, self.cell, Qt.AlignCenter, str(len(self.logic.snake.body) - 3))
 		self.canvas.painter.drawText((self.logic.width - 4) * self.cell, 0 + self.h, 4 * self.cell, self.cell, Qt.AlignCenter, PLAYER)
 		if self.pause == True:
 			self.canvas.painter.setFont(QFont('Arial', 32))
 			self.canvas.painter.drawText((self.logic.width // 2 - 4) * self.cell, (self.logic.height // 2 - 1) * self.cell + self.h, 8 * self.cell, self.cell * 4, Qt.AlignCenter, 'PAUSED')
-
 
 	def keyPressEvent(self, event: QKeyEvent) -> None:
 		if event.key() == Qt.Key_Left:
@@ -179,7 +202,6 @@ class MainForm(QMainWindow):
 			if self.logic.snake.x_dir:
 				self.logic.snake.next_x_dir = 0
 				self.logic.snake.next_y_dir = 1
-
 		if event.key() == Qt.Key_Space:
 			if self.pause == True:
 				self.start_game()
@@ -192,9 +214,9 @@ class Canvas(QWidget):
 		super().__init__()
 		self.resize(x, y)
 		self.painter = QPainter()
-	def set_color(self, r, g, b):
-		self.painter.setBrush(QColor(r, g, b))
-		self.painter.setPen(QColor(r, g, b))
+	def set_color(self, color):
+		self.painter.setBrush(color)
+		self.painter.setPen(color)
 
 
 if __name__ == '__main__':

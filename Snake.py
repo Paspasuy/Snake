@@ -1,13 +1,13 @@
 class Snake:
-	def __init__(self, logic):
-		self.x = logic.width // 2 + 1
-		self.y = logic.height // 2
+	def __init__(self, width, height):
+		self.x = width // 2 + 1
+		self.y = height // 2
 		self.x_dir = 1
 		self.y_dir = 0
 		self.next_x_dir = 1
 		self.next_y_dir = 0
-		self.w = logic.width
-		self.h = logic.height
+		self.w = width
+		self.h = height
 		self.body = [[self.x - 2, self.y], [self.x - 1, self.y], [self.x, self.y]]
 
 	def move(self):
