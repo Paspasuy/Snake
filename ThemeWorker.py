@@ -35,13 +35,14 @@ class ThemeWorker():
 		with open('.snake_settings.csv', 'r') as f:
 			reader = list(csv.reader(f))
 			theme = int(reader[0][0])
-			draw_eye = int(reader[0][0])
+			self.draw_eye = int(reader[0][1])
 			for i in range(5):
 				self.themes[4][i] = list(map(int, reader[i + 1][1][1:-1].split(', ')))
 			self.set_theme(theme)
 
 	def write_custom(self):
 		with open('.snake_settings.csv', 'w') as f:
+			print(self.draw_eye)
 			writer = csv.writer(f)
 			writer.writerow([self.theme, self.draw_eye])
 			st = ['background', 'grid', 'snake', 'apple', 'font']
@@ -55,7 +56,7 @@ class ThemeWorker():
 		self.custom_theme_setup = CustomThemeSetup(list(map(lambda _: QColor(*_), self.themes[4])))
 
 	def change_eye(self):
-		self.draw_eye = not self.draw_eye
+		self.draw_eye = int(not self.draw_eye)
 
 	def update_colors(self):
 		if self.custom_theme_setup != None:
