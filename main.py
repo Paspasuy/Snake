@@ -13,14 +13,12 @@ from ThemeWorker import ThemeWorker
 from ThemeChooser import ThemeChooser
 from CustomThemeSetup import CustomThemeSetup
 
-dbw = None
-app = None
-sp = None
-
 class MainForm(QMainWindow):
-	def __init__(self):
+	def __init__(self, database_worker, sound_player):
 		super().__init__()
-		self.player = ''
+		self.database_worker = database_worker
+		self.sound_player = sound_player
+		self.player = 'anonymous'
 		self.get_name()
 		self.status_bar_text = 'Space: pause, Esc: quit'
 		self.cell = 40
@@ -28,6 +26,7 @@ class MainForm(QMainWindow):
 		self.logic = Logic()
 		self.timer = QTimer()
 		self.theme_worker = ThemeWorker()
+		self.play_sounds = True
 		self.init_ui()
 
 	def init_ui(self):
@@ -47,14 +46,17 @@ class MainForm(QMainWindow):
 		exit_action.setShortcut('Esc')
 		change_theme_action = QAction('&Choose theme', self)
 		theme_setup_action = QAction('&Set up custom theme', self)
+		change_sounds_action = QAction('&Disable/enable sounds', self)
 		change_theme_action.triggered.connect(self.change_theme)
 		theme_setup_action.triggered.connect(self.setup_custom_theme)
+		change_sounds_action.triggered.connect(self.change_sounds)
 		action_menu.addAction(play_action)
 		action_menu.addAction(history_action)
 		action_menu.addAction(logout_action)
 		action_menu.addAction(exit_action)
 		settings_menu.addAction(change_theme_action)
 		settings_menu.addAction(theme_setup_action)
+		settings_menu.addAction(change_sounds_action)
 		self.setFixedSize(self.logic.width * self.cell, self.logic.height * self.cell + self.h + self.status_bar.height())
 		self.canvas = Canvas(self.logic.width * self.cell, self.logic.height * self.cell)
 		self.setCentralWidget(self.canvas)
@@ -96,6 +98,9 @@ class MainForm(QMainWindow):
 			self.timer.timeout.disconnect()
 			self.update()
 
+	def change_sounds(self):
+		self.play_sounds = not self.play_sounds
+
 	def change_theme(self):
 		self.pause_game()
 		self.theme_worker.init_theme_chooser()
@@ -112,18 +117,19 @@ class MainForm(QMainWindow):
 			self.logic.move()
 			l2 = len(self.logic.snake.body)
 			if self.logic.game_finished:
-				dbw.save_result(len(self.logic.snake.body) - 3, self.player)
-				sp.play_lose()
+				self.database_worker.save_result(len(self.logic.snake.body) - 3, self.player)
+				if self.play_sounds:
+					self.sound_player.play_lose()
 				self.show_best()
 				self.logic = Logic()
 				self.pause_game()
-			elif l2 - l1 == 1:
-				sp.play_apple()
+			elif l2 - l1 == 1 and self.play_sounds:
+				self.sound_player.play_apple()
 		self.update()
 
 	def show_best(self):
 		score = len(self.logic.snake.body) - 3
-		best_all, best_player = dbw.get_max(self.player)
+		best_all, best_player = self.database_worker.get_max(self.player)
 		s1 = "The best result on this PC:\n" + best_all[0][1] + ": " + str(best_all[0][2]) + ' (' + best_all[0][3] + ')\n'
 		s2 = "Your best result:\n" + best_player[0][1] + ": " + str(best_player[0][2]) + ' (' + best_player[0][3] + ')\n'
 		s3 = 'Your result:\n' + str(score) + '\n'
@@ -136,7 +142,7 @@ class MainForm(QMainWindow):
 
 	def show_all(self):
 		self.pause_game()
-		table = DataTable(dbw.get_all())
+		table = DataTable(self.database_worker.get_all())
 		central_widget = table
 		self.setCentralWidget(central_widget)
 
@@ -220,9 +226,9 @@ class Canvas(QWidget):
 
 
 if __name__ == '__main__':
-	dbw = DBWorker()
 	app = QApplication(sys.argv)
-	sp = SoundPlayer()
-	wnd = MainForm()
+	database_worker = DBWorker()
+	sound_player = SoundPlayer()
+	wnd = MainForm(database_worker, sound_player)
 	wnd.show()
 	sys.exit(app.exec())

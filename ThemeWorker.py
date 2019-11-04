@@ -10,7 +10,7 @@ from ThemeChooser import ThemeChooser
 class ThemeWorker():
 	def __init__(self):
 		self.colors = [None for _ in range(5)]
-		self.themes_str = ['dark', 'dark_soft', 'light', 'light_soft', 'custom']
+		self.themes_str = ['dark', 'dark soft', 'light', 'light soft', 'custom']
 		self.themes = [[(0, 0, 0), (255, 255, 0), (0, 255, 0), (255, 0, 0), (255, 255, 255)],
 			[(0, 0, 0), (255, 211, 95), (0, 153, 0), (200, 0, 0), (255, 255, 255)],
  			[(255, 255, 255), (255, 255, 0), (0, 255, 0), (255, 0, 0), (0, 0, 0)],
