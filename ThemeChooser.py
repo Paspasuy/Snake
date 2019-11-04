@@ -5,10 +5,10 @@ class ThemeChooser(QWidget):
 		super().__init__()
 		self.choose = choose
 		grid = QGridLayout()
-		actions = [self.dark,
-		self.dark_soft, self.light, 
-		self.light_soft, self.custom]
-		for i in range(5):
+		actions = [self.dark, self.dark_soft, self.light, 
+			self.light_soft, self.cybernetic, self.gray, 
+			self.road_to_death, self.custom]
+		for i in range(len(themes_str)):
 			button = QPushButton(themes_str[i])
 			button.clicked.connect(actions[i])
 			grid.addWidget(button, i, 0)
@@ -26,6 +26,15 @@ class ThemeChooser(QWidget):
 	def light_soft(self):
 		self.choose = 3
 
-	def custom(self):
+	def cybernetic(self):
 		self.choose = 4
+
+	def gray(self):
+		self.choose = 5
+
+	def road_to_death(self):
+		self.choose = 6
+
+	def custom(self):
+		self.choose = 7
 

@@ -51,6 +51,7 @@ class MainForm(QMainWindow):
 		change_theme_action.triggered.connect(self.change_theme)
 		theme_setup_action.triggered.connect(self.setup_custom_theme)
 		change_sounds_action.triggered.connect(self.change_sounds)
+		change_sounds_action.setShortcut('m')
 		change_eye_action.triggered.connect(self.theme_worker.change_eye)
 		action_menu.addAction(play_action)
 		action_menu.addAction(history_action)
@@ -122,7 +123,7 @@ class MainForm(QMainWindow):
 			if self.logic.game_finished:
 				self.database_worker.save_result(len(self.logic.snake.body) - 3, self.player)
 				if self.play_sounds:
-					self.sound_player.play_lose()
+					self.sound_player.play_lose(self.theme_worker.theme)
 				self.show_best()
 				self.logic = Logic()
 				self.pause_game()
@@ -198,6 +199,10 @@ class MainForm(QMainWindow):
 		self.canvas.painter.setFont(QFont('Arial', 16))
 		self.canvas.painter.drawText(0, 0 + self.h, self.cell, self.cell, Qt.AlignCenter, str(len(self.logic.snake.body) - 3))
 		self.canvas.painter.drawText((self.logic.width - 4) * self.cell, 0 + self.h, 4 * self.cell, self.cell, Qt.AlignCenter, self.player)
+		if not self.play_sounds:
+			self.canvas.painter.drawText((self.logic.width - 1) * self.cell, (self.logic.height - 1) * self.cell + self.h, self.cell, self.cell, Qt.AlignCenter, '🔇')
+		else:
+			self.canvas.painter.drawText((self.logic.width - 1) * self.cell, (self.logic.height - 1) * self.cell + self.h, self.cell, self.cell, Qt.AlignCenter, '🔈')
 		if self.pause == True:
 			self.canvas.painter.setFont(QFont('Arial', 32))
 			self.canvas.painter.drawText((self.logic.width // 2 - 4) * self.cell, (self.logic.height // 2 - 1) * self.cell + self.h, 8 * self.cell, self.cell * 4, Qt.AlignCenter, 'PAUSED')
