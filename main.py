@@ -47,9 +47,11 @@ class MainForm(QMainWindow):
 		change_theme_action = QAction('&Choose theme', self)
 		theme_setup_action = QAction('&Set up custom theme', self)
 		change_sounds_action = QAction('&Disable/enable sounds', self)
+		change_eye_action = QAction('&Disable/enable eye', self)
 		change_theme_action.triggered.connect(self.change_theme)
 		theme_setup_action.triggered.connect(self.setup_custom_theme)
 		change_sounds_action.triggered.connect(self.change_sounds)
+		change_eye_action.triggered.connect(self.theme_worker.change_eye)
 		action_menu.addAction(play_action)
 		action_menu.addAction(history_action)
 		action_menu.addAction(logout_action)
@@ -57,6 +59,7 @@ class MainForm(QMainWindow):
 		settings_menu.addAction(change_theme_action)
 		settings_menu.addAction(theme_setup_action)
 		settings_menu.addAction(change_sounds_action)
+		settings_menu.addAction(change_eye_action)
 		self.setFixedSize(self.logic.width * self.cell, self.logic.height * self.cell + self.h + self.status_bar.height())
 		self.canvas = Canvas(self.logic.width * self.cell, self.logic.height * self.cell)
 		self.setCentralWidget(self.canvas)
@@ -176,6 +179,14 @@ class MainForm(QMainWindow):
 		r = self.cell - 4
 		for x, y in self.logic.snake.body:
 			self.canvas.painter.drawEllipse(self.cell * x + 2, self.cell * y + 2 + self.h, r, r)
+		if self.theme_worker.draw_eye:
+			x = self.logic.snake.x
+			x = int(self.cell * (x + 0.25)) + int(self.cell * 0.25) * self.logic.snake.x_dir
+			y = self.logic.snake.y
+			y = int(self.cell * (y + 0.25)) + int(self.cell * 0.25) * self.logic.snake.y_dir
+			y += self.h
+			self.canvas.set_color(self.inv_color(self.theme_worker.colors[2]))
+			self.canvas.painter.drawEllipse(x, y, r // 2, r // 2)
 
 	def draw_apple(self):
 		self.canvas.set_color(self.theme_worker.colors[3])
@@ -213,6 +224,9 @@ class MainForm(QMainWindow):
 				self.start_game()
 			else:
 				self.pause_game()
+	def inv_color(self, color):
+		return QColor(255 - color.red(),
+			 255 - color.green(), 255 - color.blue()) 
 
 
 class Canvas(QWidget):
