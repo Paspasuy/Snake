@@ -42,7 +42,6 @@ class ThemeWorker():
 
 	def write_custom(self):
 		with open('.snake_settings.csv', 'w') as f:
-			print(self.draw_eye)
 			writer = csv.writer(f)
 			writer.writerow([self.theme, self.draw_eye])
 			st = ['background', 'grid', 'snake', 'apple', 'font']
