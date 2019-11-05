@@ -52,7 +52,7 @@ class MainForm(QMainWindow):
 		theme_setup_action.triggered.connect(self.setup_custom_theme)
 		change_sounds_action.triggered.connect(self.change_sounds)
 		change_sounds_action.setShortcut('m')
-		change_eye_action.triggered.connect(self.theme_worker.change_eye)
+		change_eye_action.triggered.connect(self.change_eye)
 		action_menu.addAction(play_action)
 		action_menu.addAction(history_action)
 		action_menu.addAction(logout_action)
@@ -104,6 +104,7 @@ class MainForm(QMainWindow):
 
 	def change_sounds(self):
 		self.play_sounds = not self.play_sounds
+		self.update()
 
 	def change_theme(self):
 		self.pause_game()
@@ -114,6 +115,10 @@ class MainForm(QMainWindow):
 		self.pause_game()
 		self.theme_worker.init_custom_theme_setup()
 		self.setCentralWidget(self.theme_worker.custom_theme_setup)
+
+	def change_eye(self):
+		self.theme_worker.change_eye()
+		self.update()
 
 	def logic_process(self):
 		if not self.pause:
