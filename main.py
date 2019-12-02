@@ -1,4 +1,3 @@
-#!/bin/python3
 import sys
 
 from PyQt5.QtCore import Qt, QPoint, QTimer, QSize
